@@ -1,13 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 const Header = () => {
   const { getTotalItems } = useCart();
+  const { wishlist } = useWishlist();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -64,6 +66,18 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" asChild className="relative hidden md:flex">
+            <Link to="/wishlist">
+              <Heart className="h-5 w-5" />
+              {wishlist.length > 0 && (
+                <Badge variant="secondary" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                  {wishlist.length}
+                </Badge>
+              )}
+              <span className="sr-only">Wishlist</span>
+            </Link>
+          </Button>
+
           <Button variant="ghost" size="icon" asChild className="hidden md:flex">
             <Link to="/account">
               <User className="h-5 w-5" />
@@ -139,6 +153,17 @@ const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Entertainment
+              </Link>
+              <Link 
+                to="/wishlist" 
+                className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Heart className="h-4 w-4" />
+                My Wishlist
+                {wishlist.length > 0 && (
+                  <Badge variant="secondary" className="ml-auto">{wishlist.length}</Badge>
+                )}
               </Link>
               <Link 
                 to="/account" 
