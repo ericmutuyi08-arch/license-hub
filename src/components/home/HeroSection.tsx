@@ -22,7 +22,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden min-h-[600px] md:min-h-[700px]">
+    <section className="relative overflow-hidden min-h-[420px] md:min-h-[480px]">
       {/* Background Slideshow */}
       <div className="absolute inset-0 z-0">
         {heroImages.map((image, index) => (
@@ -39,8 +39,8 @@ const HeroSection = () => {
             />
           </div>
         ))}
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/60" />
+        {/* Dark overlay for readability - reduced opacity */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/50 to-transparent" />
       </div>
 
       {/* Slide indicators */}
@@ -59,7 +59,7 @@ const HeroSection = () => {
         ))}
       </div>
 
-      <div className="container py-16 md:py-24 lg:py-32 relative z-10">
+      <div className="container py-10 md:py-14 lg:py-16 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
           <div className="space-y-6 animate-fade-in">
