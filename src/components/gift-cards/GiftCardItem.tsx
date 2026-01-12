@@ -11,6 +11,14 @@ interface GiftCardItemProps {
 const GiftCardItem = ({ card }: GiftCardItemProps) => {
   const minPrice = Math.min(...card.denominations);
   const maxPrice = Math.max(...card.denominations);
+  
+  // Calculate discounted prices
+  const discountedMinPrice = card.discount 
+    ? minPrice * (1 - card.discount / 100) 
+    : minPrice;
+  const discountedMaxPrice = card.discount 
+    ? maxPrice * (1 - card.discount / 100) 
+    : maxPrice;
 
   return (
     <Link to={`/card/${card.id}`}>
@@ -21,9 +29,9 @@ const GiftCardItem = ({ card }: GiftCardItemProps) => {
             alt={card.name}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          {card.featured && (
-            <Badge className="absolute top-3 left-3 gradient-accent text-accent-foreground border-0">
-              Popular
+          {card.discount && (
+            <Badge className="absolute top-2 left-2 bg-destructive text-destructive-foreground border-0 font-bold text-xs px-2 py-1">
+              -{card.discount}%
             </Badge>
           )}
           {!card.inStock && (
@@ -32,29 +40,39 @@ const GiftCardItem = ({ card }: GiftCardItemProps) => {
             </div>
           )}
         </div>
-        <CardContent className="p-4">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div>
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                {card.name}
-              </h3>
-              <p className="text-sm text-muted-foreground">{card.brand}</p>
-            </div>
+        <CardContent className="p-3">
+          <div className="mb-1">
+            <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              {card.name}
+            </h3>
+            <p className="text-xs text-muted-foreground">{card.brand}</p>
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{card.description}</p>
-          <div className="flex items-center justify-between">
-            <p className="font-semibold text-primary">
-              ${minPrice} - ${maxPrice}
-            </p>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-2">
+              {card.discount ? (
+                <>
+                  <span className="text-xs text-muted-foreground line-through">
+                    ${minPrice} - ${maxPrice}
+                  </span>
+                  <span className="font-semibold text-sm text-green-600">
+                    ${discountedMinPrice.toFixed(0)} - ${discountedMaxPrice.toFixed(0)}
+                  </span>
+                </>
+              ) : (
+                <span className="font-semibold text-sm text-primary">
+                  ${minPrice} - ${maxPrice}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1">
               {card.deliveryOptions.includes('digital') && (
-                <div className="flex items-center justify-center h-6 w-6 rounded bg-muted" title="Digital Delivery">
-                  <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center justify-center h-5 w-5 rounded bg-muted" title="Digital Delivery">
+                  <Monitor className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}
               {card.deliveryOptions.includes('physical') && (
-                <div className="flex items-center justify-center h-6 w-6 rounded bg-muted" title="Physical Card">
-                  <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center justify-center h-5 w-5 rounded bg-muted" title="Physical Card">
+                  <Package className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}
             </div>

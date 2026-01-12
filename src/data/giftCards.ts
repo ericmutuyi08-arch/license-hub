@@ -10,6 +10,7 @@ export interface GiftCard {
   popularity: number;
   inStock: boolean;
   featured: boolean;
+  discount?: number; // Discount percentage (e.g., 15 means 15% off)
 }
 
 export const categories = [
@@ -34,6 +35,7 @@ export const giftCards: GiftCard[] = [
     popularity: 98,
     inStock: true,
     featured: true,
+    discount: 10,
   },
   {
     id: 'apple-1',
@@ -47,6 +49,7 @@ export const giftCards: GiftCard[] = [
     popularity: 95,
     inStock: true,
     featured: true,
+    discount: 5,
   },
   {
     id: 'google-play-1',
@@ -60,6 +63,7 @@ export const giftCards: GiftCard[] = [
     popularity: 88,
     inStock: true,
     featured: true,
+    discount: 15,
   },
   {
     id: 'steam-1',
@@ -73,6 +77,7 @@ export const giftCards: GiftCard[] = [
     popularity: 92,
     inStock: true,
     featured: true,
+    discount: 20,
   },
   {
     id: 'playstation-1',
@@ -99,6 +104,7 @@ export const giftCards: GiftCard[] = [
     popularity: 87,
     inStock: true,
     featured: false,
+    discount: 8,
   },
   {
     id: 'netflix-1',
@@ -112,6 +118,7 @@ export const giftCards: GiftCard[] = [
     popularity: 93,
     inStock: true,
     featured: true,
+    discount: 12,
   },
   {
     id: 'spotify-1',
@@ -138,6 +145,7 @@ export const giftCards: GiftCard[] = [
     popularity: 85,
     inStock: true,
     featured: false,
+    discount: 7,
   },
   {
     id: 'starbucks-1',
@@ -164,6 +172,7 @@ export const giftCards: GiftCard[] = [
     popularity: 82,
     inStock: true,
     featured: false,
+    discount: 18,
   },
   {
     id: 'airbnb-1',
