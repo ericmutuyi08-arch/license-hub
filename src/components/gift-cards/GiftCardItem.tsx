@@ -2,13 +2,18 @@ import { Link } from 'react-router-dom';
 import { GiftCard } from '@/data/giftCards';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Monitor, Package } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Monitor, Package, Heart } from 'lucide-react';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 interface GiftCardItemProps {
   card: GiftCard;
 }
 
 const GiftCardItem = ({ card }: GiftCardItemProps) => {
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const inWishlist = isInWishlist(card.id);
+
   const minPrice = Math.min(...card.denominations);
   const maxPrice = Math.max(...card.denominations);
   
@@ -19,6 +24,16 @@ const GiftCardItem = ({ card }: GiftCardItemProps) => {
   const discountedMaxPrice = card.discount 
     ? maxPrice * (1 - card.discount / 100) 
     : maxPrice;
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (inWishlist) {
+      removeFromWishlist(card.id);
+    } else {
+      addToWishlist(card.id);
+    }
+  };
 
   return (
     <Link to={`/card/${card.id}`}>
@@ -34,6 +49,16 @@ const GiftCardItem = ({ card }: GiftCardItemProps) => {
               -{card.discount}%
             </Badge>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-background ${
+              inWishlist ? 'text-destructive' : 'text-muted-foreground'
+            }`}
+            onClick={handleWishlistClick}
+          >
+            <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current' : ''}`} />
+          </Button>
           {!card.inStock && (
             <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
               <Badge variant="secondary">Out of Stock</Badge>
