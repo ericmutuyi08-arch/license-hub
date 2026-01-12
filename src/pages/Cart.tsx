@@ -41,7 +41,7 @@ const Cart = () => {
   return (
     <>
       <Helmet>
-        <title>Shopping Cart ({items.length}) | GiftCard Pro</title>
+        <title>{`Shopping Cart (${items.length}) | GiftCard Pro`}</title>
       </Helmet>
       <Layout>
         <div className="container py-8">
