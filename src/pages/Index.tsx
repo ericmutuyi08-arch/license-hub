@@ -1,13 +1,22 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Layout from '@/components/layout/Layout';
+import HeroSection from '@/components/home/HeroSection';
+import CategorySection from '@/components/home/CategorySection';
+import FeaturedSection from '@/components/home/FeaturedSection';
+import { Helmet } from 'react-helmet-async';
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Helmet>
+        <title>GiftCard Pro - Premium Gift Cards | Instant Digital Delivery</title>
+        <meta name="description" content="Shop premium gift cards from top brands. Instant digital delivery or physical cards shipped free. Amazon, Apple, Steam, Netflix, and 50+ more brands." />
+      </Helmet>
+      <Layout>
+        <HeroSection />
+        <CategorySection />
+        <FeaturedSection />
+      </Layout>
+    </>
   );
 };
 
