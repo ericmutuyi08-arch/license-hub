@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { useState, useMemo, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import GiftCardGrid from '@/components/gift-cards/GiftCardGrid';
@@ -15,18 +15,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Helmet } from 'react-helmet-async';
 
 const Catalog = () => {
+  const { category: categoryParam } = useParams<{ category?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam || 'all');
   const [deliveryFilter, setDeliveryFilter] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<string>('all');
   const [sortBy, setSortBy] = useState('popularity');
 
   // Sync selectedCategory with URL params when navigating
   useEffect(() => {
-    const categoryFromUrl = searchParams.get('category') || 'all';
-    setSelectedCategory(categoryFromUrl);
-  }, [searchParams]);
+    setSelectedCategory(categoryParam || 'all');
+  }, [categoryParam]);
 
   const { data: giftCardsData, isLoading: isLoadingCards } = useGiftCards();
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
@@ -90,13 +91,11 @@ const Catalog = () => {
   }, [giftCards, searchQuery, selectedCategory, deliveryFilter, priceRange, sortBy]);
 
   const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
     if (value === 'all') {
-      searchParams.delete('category');
+      navigate('/catalog');
     } else {
-      searchParams.set('category', value);
+      navigate(`/catalog/${value}`);
     }
-    setSearchParams(searchParams);
   };
 
   const handleDeliveryChange = (option: string, checked: boolean) => {
@@ -109,11 +108,10 @@ const Catalog = () => {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setSelectedCategory('all');
     setDeliveryFilter([]);
     setPriceRange('all');
     setSortBy('popularity');
-    setSearchParams({});
+    navigate('/catalog');
   };
 
   const hasActiveFilters = searchQuery || selectedCategory !== 'all' || deliveryFilter.length > 0 || priceRange !== 'all';
@@ -197,17 +195,35 @@ const Catalog = () => {
     );
   }
 
+  // Get category display name for SEO
+  const getCategoryName = () => {
+    if (!categoryParam) return null;
+    const category = (categoriesData || []).find(c => c.id === categoryParam);
+    return category?.name || categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1);
+  };
+
+  const categoryName = getCategoryName();
+  const pageTitle = categoryName 
+    ? `${categoryName} Gift Cards | GiftCard Pro` 
+    : 'Browse Gift Cards | GiftCard Pro';
+  const pageDescription = categoryName
+    ? `Shop ${categoryName.toLowerCase()} gift cards with instant digital delivery. Find the best deals on ${categoryName.toLowerCase()} gift cards.`
+    : 'Browse our complete collection of gift cards. Filter by category, delivery method, and price range. Instant delivery available.';
+
   return (
     <>
       <Helmet>
-        <title>Browse Gift Cards | GiftCard Pro</title>
-        <meta name="description" content="Browse our complete collection of gift cards. Filter by category, delivery method, and price range. Instant delivery available." />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={categoryParam ? `/catalog/${categoryParam}` : '/catalog'} />
       </Helmet>
       <Layout>
         <div className="container py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">Gift Cards</h1>
+            <h1 className="font-display text-3xl md:text-4xl font-bold mb-2">
+              {categoryName ? `${categoryName} Gift Cards` : 'All Gift Cards'}
+            </h1>
             <p className="text-muted-foreground">
               {filteredCards.length} {filteredCards.length === 1 ? 'card' : 'cards'} available
             </p>

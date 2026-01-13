@@ -39,13 +39,13 @@ const Header = () => {
           <Link to="/catalog" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Browse Cards
           </Link>
-          <Link to="/catalog?category=gaming" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/catalog/gaming" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Gaming
           </Link>
-          <Link to="/catalog?category=shopping" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/catalog/shopping" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Shopping
           </Link>
-          <Link to="/catalog?category=entertainment" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <Link to="/catalog/entertainment" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Entertainment
           </Link>
         </nav>
@@ -134,21 +134,21 @@ const Header = () => {
                 Browse All Cards
               </Link>
               <Link 
-                to="/catalog?category=gaming" 
+                to="/catalog/gaming" 
                 className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Gaming
               </Link>
               <Link 
-                to="/catalog?category=shopping" 
+                to="/catalog/shopping" 
                 className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Shopping
               </Link>
               <Link 
-                to="/catalog?category=entertainment" 
+                to="/catalog/entertainment" 
                 className="px-3 py-2 rounded-md text-sm font-medium hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
