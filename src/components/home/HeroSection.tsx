@@ -22,7 +22,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section className="relative overflow-hidden min-h-[420px] md:min-h-[480px]">
+    <section className="relative overflow-hidden h-[200px]">
       {/* Background Slideshow */}
       <div className="absolute inset-0 z-0">
         {heroImages.map((image, index) => (
