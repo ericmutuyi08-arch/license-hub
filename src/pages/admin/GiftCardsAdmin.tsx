@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AdminLayout from './AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,11 +9,12 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Upload, X, ImageIcon } from 'lucide-react';
 import { useGiftCards, useCreateGiftCard, useUpdateGiftCard, useDeleteGiftCard } from '@/hooks/useGiftCards';
 import { useCategories } from '@/hooks/useCategories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useGiftCardImageUpload } from '@/hooks/useGiftCardImageUpload';
 
 const GiftCardsAdmin = () => {
   const { data: giftCards, isLoading } = useGiftCards();
@@ -21,9 +22,13 @@ const GiftCardsAdmin = () => {
   const createMutation = useCreateGiftCard();
   const updateMutation = useUpdateGiftCard();
   const deleteMutation = useDeleteGiftCard();
+  const { uploadImage, deleteImage, isUploading } = useGiftCardImageUpload();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCard, setEditingCard] = useState<any>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -55,6 +60,32 @@ const GiftCardsAdmin = () => {
       discount: '',
     });
     setEditingCard(null);
+    setImagePreview(null);
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearImage = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    setFormData({ ...formData, image: '' });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleEdit = (card: any) => {
@@ -73,19 +104,38 @@ const GiftCardsAdmin = () => {
       featured: card.featured,
       discount: card.discount?.toString() || '',
     });
+    setImagePreview(card.image || null);
+    setSelectedFile(null);
     setIsDialogOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    let imageUrl = formData.image;
+
+    // Upload new image if selected
+    if (selectedFile) {
+      const uploadedUrl = await uploadImage(selectedFile, formData.slug);
+      if (uploadedUrl) {
+        imageUrl = uploadedUrl;
+        
+        // Delete old image if updating
+        if (editingCard?.image && editingCard.image !== imageUrl) {
+          await deleteImage(editingCard.image);
+        }
+      } else {
+        return; // Upload failed, don't proceed
+      }
+    }
+
     const data = {
       name: formData.name,
       slug: formData.slug,
       brand: formData.brand,
       category: formData.category,
       description: formData.description || null,
-      image: formData.image || null,
+      image: imageUrl || null,
       denominations: formData.denominations.split(',').map(d => parseInt(d.trim())).filter(d => !isNaN(d)),
       delivery_options: formData.delivery_options.split(',').map(d => d.trim()),
       popularity: formData.popularity,
@@ -172,8 +222,77 @@ const GiftCardsAdmin = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="image">Image URL</Label>
-                  <Input id="image" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} placeholder="https://..." />
+                  <Label>Gift Card Image</Label>
+                  <div className="space-y-3">
+                    {/* Image Preview */}
+                    {imagePreview ? (
+                      <div className="relative inline-block">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="h-32 w-auto rounded-lg border object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute -right-2 -top-2 h-6 w-6"
+                          onClick={clearImage}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex h-32 w-48 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50">
+                        <div className="text-center">
+                          <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground/50" />
+                          <p className="mt-1 text-xs text-muted-foreground">No image</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Upload Button */}
+                    <div className="flex gap-2">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Upload className="mr-2 h-4 w-4" />
+                        )}
+                        Upload Image
+                      </Button>
+                    </div>
+                    
+                    {/* Or use URL */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">or enter URL:</span>
+                      <Input 
+                        value={selectedFile ? '' : formData.image} 
+                        onChange={(e) => {
+                          setFormData({ ...formData, image: e.target.value });
+                          setImagePreview(e.target.value || null);
+                          setSelectedFile(null);
+                        }} 
+                        placeholder="https://..." 
+                        className="flex-1 text-sm"
+                        disabled={!!selectedFile}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -211,9 +330,9 @@ const GiftCardsAdmin = () => {
 
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => { setIsDialogOpen(false); resetForm(); }}>Cancel</Button>
-                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                    {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    {editingCard ? 'Update' : 'Create'}
+                  <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending || isUploading}>
+                    {(createMutation.isPending || updateMutation.isPending || isUploading) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    {isUploading ? 'Uploading...' : editingCard ? 'Update' : 'Create'}
                   </Button>
                 </div>
               </form>
