@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
-import { GiftCard } from '@/data/giftCards';
+import { GiftCard } from '@/types/giftCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Monitor, Package, Heart } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useNavigate } from 'react-router-dom';
 
 interface GiftCardItemProps {
   card: GiftCard;
@@ -12,6 +12,7 @@ interface GiftCardItemProps {
 
 const GiftCardItem = ({ card }: GiftCardItemProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const navigate = useNavigate();
   const inWishlist = isInWishlist(card.id);
 
   const minPrice = Math.min(...card.denominations);
@@ -35,8 +36,12 @@ const GiftCardItem = ({ card }: GiftCardItemProps) => {
     }
   };
 
+  const handleClick = () => {
+    navigate(`/card/${card.slug}`);
+  };
+
   return (
-    <Link to={`/card/${card.id}`}>
+    <div onClick={handleClick} className="cursor-pointer">
       <Card className="group overflow-hidden transition-all duration-300 hover:shadow-hover hover:-translate-y-1">
         <div className="aspect-[16/10] relative overflow-hidden bg-muted">
           <img
@@ -104,7 +109,7 @@ const GiftCardItem = ({ card }: GiftCardItemProps) => {
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 };
 

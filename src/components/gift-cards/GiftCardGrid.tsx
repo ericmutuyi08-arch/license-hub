@@ -1,4 +1,4 @@
-import { GiftCard } from '@/data/giftCards';
+import { GiftCard } from '@/types/giftCard';
 import GiftCardItem from './GiftCardItem';
 
 interface GiftCardGridProps {

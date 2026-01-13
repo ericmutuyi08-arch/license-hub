@@ -1,15 +1,28 @@
 import { Link } from 'react-router-dom';
-import { giftCards } from '@/data/giftCards';
+import { useHotDeals } from '@/hooks/useGiftCards';
+import { transformGiftCard } from '@/types/giftCard';
 import GiftCardItem from '@/components/gift-cards/GiftCardItem';
 import { Button } from '@/components/ui/button';
-import { Flame, ArrowRight } from 'lucide-react';
+import { Flame, ArrowRight, Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
 
 const HotDealsSection = () => {
-  // Get cards with discounts, sorted by highest discount first
-  const hotDeals = giftCards
-    .filter((card) => card.discount && card.discount > 0)
-    .sort((a, b) => (b.discount || 0) - (a.discount || 0))
-    .slice(0, 4);
+  const { data: hotDealsData, isLoading } = useHotDeals();
+  
+  const hotDeals = useMemo(() => 
+    (hotDealsData || []).map(transformGiftCard), 
+    [hotDealsData]
+  );
+
+  if (isLoading) {
+    return (
+      <section className="py-12 bg-gradient-to-b from-destructive/5 to-background">
+        <div className="container flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </section>
+    );
+  }
 
   if (hotDeals.length === 0) return null;
 

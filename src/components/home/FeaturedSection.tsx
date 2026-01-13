@@ -1,11 +1,30 @@
-import { getFeaturedCards } from '@/data/giftCards';
+import { useFeaturedGiftCards } from '@/hooks/useGiftCards';
+import { transformGiftCard } from '@/types/giftCard';
 import GiftCardGrid from '@/components/gift-cards/GiftCardGrid';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { useMemo } from 'react';
 
 const FeaturedSection = () => {
-  const featuredCards = getFeaturedCards();
+  const { data: featuredCardsData, isLoading } = useFeaturedGiftCards();
+  
+  const featuredCards = useMemo(() => 
+    (featuredCardsData || []).map(transformGiftCard), 
+    [featuredCardsData]
+  );
+
+  if (isLoading) {
+    return (
+      <section className="py-16">
+        <div className="container flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </section>
+    );
+  }
+
+  if (featuredCards.length === 0) return null;
 
   return (
     <section className="py-16">
