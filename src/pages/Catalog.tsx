@@ -2,13 +2,15 @@ import { useSearchParams } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import GiftCardGrid from '@/components/gift-cards/GiftCardGrid';
-import { giftCards, categories, searchCards, getCardsByCategory } from '@/data/giftCards';
+import { useGiftCards } from '@/hooks/useGiftCards';
+import { useCategories } from '@/hooks/useCategories';
+import { transformGiftCard, GiftCard } from '@/types/giftCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Helmet } from 'react-helmet-async';
 
@@ -20,12 +22,25 @@ const Catalog = () => {
   const [priceRange, setPriceRange] = useState<string>('all');
   const [sortBy, setSortBy] = useState('popularity');
 
+  const { data: giftCardsData, isLoading: isLoadingCards } = useGiftCards();
+  const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
+
+  const giftCards = useMemo(() => 
+    (giftCardsData || []).map(transformGiftCard), 
+    [giftCardsData]
+  );
+
   const filteredCards = useMemo(() => {
     let cards = [...giftCards];
 
     // Search filter
     if (searchQuery) {
-      cards = searchCards(searchQuery);
+      const lowercaseQuery = searchQuery.toLowerCase();
+      cards = cards.filter(card =>
+        card.name.toLowerCase().includes(lowercaseQuery) ||
+        card.brand.toLowerCase().includes(lowercaseQuery) ||
+        card.category.toLowerCase().includes(lowercaseQuery)
+      );
     }
 
     // Category filter
@@ -66,7 +81,7 @@ const Catalog = () => {
     }
 
     return cards;
-  }, [searchQuery, selectedCategory, deliveryFilter, priceRange, sortBy]);
+  }, [giftCards, searchQuery, selectedCategory, deliveryFilter, priceRange, sortBy]);
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
@@ -108,7 +123,7 @@ const Catalog = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {categories.map(cat => (
+            {(categoriesData || []).map(cat => (
               <SelectItem key={cat.id} value={cat.id}>
                 {cat.icon} {cat.name}
               </SelectItem>
@@ -165,6 +180,16 @@ const Catalog = () => {
       )}
     </div>
   );
+
+  if (isLoadingCards || isLoadingCategories) {
+    return (
+      <Layout>
+        <div className="container py-8 flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <>

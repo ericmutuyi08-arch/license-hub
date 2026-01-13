@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
-import { getCardById, GiftCard } from '@/data/giftCards';
+import { useGiftCard } from '@/hooks/useGiftCards';
+import { transformGiftCard } from '@/types/giftCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,27 +11,46 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
-import { ShoppingCart, Monitor, Package, ChevronLeft, Check, Gift, Shield, Clock } from 'lucide-react';
+import { ShoppingCart, Monitor, Package, ChevronLeft, Check, Gift, Shield, Clock, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 
 const CardDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id: slug } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { toast } = useToast();
 
-  const card = id ? getCardById(id) : undefined;
+  const { data: cardData, isLoading } = useGiftCard(slug || '');
+  
+  const card = useMemo(() => 
+    cardData ? transformGiftCard(cardData) : null, 
+    [cardData]
+  );
 
-  const [selectedDenomination, setSelectedDenomination] = useState<number | null>(
-    card ? card.denominations[0] : null
-  );
-  const [deliveryOption, setDeliveryOption] = useState<'digital' | 'physical'>(
-    card?.deliveryOptions[0] || 'digital'
-  );
+  const [selectedDenomination, setSelectedDenomination] = useState<number | null>(null);
+  const [deliveryOption, setDeliveryOption] = useState<'digital' | 'physical'>('digital');
   const [recipientName, setRecipientName] = useState('');
   const [recipientEmail, setRecipientEmail] = useState('');
   const [personalMessage, setPersonalMessage] = useState('');
+
+  // Set defaults when card loads
+  useMemo(() => {
+    if (card && selectedDenomination === null) {
+      setSelectedDenomination(card.denominations[0]);
+      setDeliveryOption(card.deliveryOptions[0] || 'digital');
+    }
+  }, [card, selectedDenomination]);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-16 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!card) {
     return (

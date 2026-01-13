@@ -1,16 +1,32 @@
 import Layout from '@/components/layout/Layout';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { giftCards } from '@/data/giftCards';
+import { useGiftCards } from '@/hooks/useGiftCards';
+import { transformGiftCard } from '@/types/giftCard';
 import GiftCardItem from '@/components/gift-cards/GiftCardItem';
 import { Button } from '@/components/ui/button';
-import { Heart } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { useMemo } from 'react';
 
 const Wishlist = () => {
   const { wishlist, clearWishlist } = useWishlist();
+  const { data: giftCardsData, isLoading } = useGiftCards();
 
-  const wishlistCards = giftCards.filter((card) => wishlist.includes(card.id));
+  const wishlistCards = useMemo(() => {
+    const allCards = (giftCardsData || []).map(transformGiftCard);
+    return allCards.filter((card) => wishlist.includes(card.id));
+  }, [giftCardsData, wishlist]);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container py-8 flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <>
