@@ -1,10 +1,10 @@
 import { useSearchParams } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import GiftCardGrid from '@/components/gift-cards/GiftCardGrid';
 import { useGiftCards } from '@/hooks/useGiftCards';
 import { useCategories } from '@/hooks/useCategories';
-import { transformGiftCard, GiftCard } from '@/types/giftCard';
+import { transformGiftCard } from '@/types/giftCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +21,12 @@ const Catalog = () => {
   const [deliveryFilter, setDeliveryFilter] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<string>('all');
   const [sortBy, setSortBy] = useState('popularity');
+
+  // Sync selectedCategory with URL params when navigating
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get('category') || 'all';
+    setSelectedCategory(categoryFromUrl);
+  }, [searchParams]);
 
   const { data: giftCardsData, isLoading: isLoadingCards } = useGiftCards();
   const { data: categoriesData, isLoading: isLoadingCategories } = useCategories();
